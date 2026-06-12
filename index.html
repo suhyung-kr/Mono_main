@@ -1108,760 +1108,257 @@
 }
   </script>
 <script>
-    const DASHBOARD_DATA_NODE = document.getElementById("dashboard-data");
-    const EMBEDDED_DATA_VERSION = DASHBOARD_DATA_NODE?.dataset?.version || "vo06";
-    const STORAGE_KEY = "studio-mono-dashboard-internal-" + EMBEDDED_DATA_VERSION;
-    function readEmbeddedDefaultData(){
-      try{
-        const raw = DASHBOARD_DATA_NODE?.textContent || "{}";
-        return JSON.parse(raw);
-      }catch(e){
-        console.error("Failed to parse embedded dashboard data", e);
-        return {weeks:[], kpis:[], requests:[], events:[]};
-      }
-    }
-    const defaultData = readEmbeddedDefaultData();
-    const PROJECT_START = new Date(2026, 4, 11);
-    const PROJECT_END = new Date(2026, 7, 10);
-    function todayLocal(){ const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
-    function dateKeyFromDate(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
-    function monthKeyFromDate(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`; }
-    function initialMonth(){
-      const t = todayLocal();
-      const allowed = ["2026-05","2026-06","2026-07","2026-08"];
-      const key = monthKeyFromDate(t);
-      return allowed.includes(key) ? key : "2026-05";
-    }
-    function projectWeekNumber(date){
-      const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-      if(d < PROJECT_START || d > PROJECT_END) return null;
-      return Math.floor((d - PROJECT_START) / (7 * 24 * 60 * 60 * 1000)) + 1;
-    }
-    function initialWeek(){
-      const w = projectWeekNumber(todayLocal());
-      return w && w >= 1 && w <= 14 ? w : 1;
-    }
-    let data=loadData(), selectedWeek=initialWeek(), selectedMonth=initialMonth(), editMode=false, editingDate=null;
-    data.requests = data.requests.map(req => ({completedWeek:null, ...req}));
-    function clone(obj){return JSON.parse(JSON.stringify(obj))}
-    function loadData(){try{const raw=localStorage.getItem(STORAGE_KEY);return raw?JSON.parse(raw):clone(defaultData)}catch(e){return clone(defaultData)}}
-    function saveData(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}
-    function currentWeek(){return data.weeks.find(w=>w.week===selectedWeek)||data.weeks[0]}
-    function escapeHtml(str){return String(str??"").replace(/[&<>"']/g,s=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[s]))}
-    function escapeAttr(str){return escapeHtml(str).replace(/"/g,"&quot;")}
-    function statusClass(status){if(status==="완료")return"done";if(status==="진행 중")return"doing";if(status==="확인 필요")return"need";if(status==="예정")return"todo";return"none"}
-    function eventMeta(type){if(type==="visit")return{color:"#2563eb",text:"#1e40af"};return{color:"#9ca3af",text:"#374151"}}
+(function(){
+  const DASHBOARD_DATA_NODE = document.getElementById("dashboard-data");
+  const EMBEDDED_DATA_VERSION = DASHBOARD_DATA_NODE?.dataset?.version || "vo-fixed-20260612";
+  const STORAGE_KEY = "studio-mono-dashboard-internal-" + EMBEDDED_DATA_VERSION;
+  const PROJECT_START = new Date(2026, 4, 11);
+  const PROJECT_END = new Date(2026, 7, 10);
 
-    function renderMode(){
-      document.getElementById("app").classList.toggle("edit-mode",editMode);
-      document.getElementById("editPill").style.display=editMode?"inline-flex":"none";
-      document.getElementById("backupBtn").style.display=editMode?"inline-block":"none";
-      document.getElementById("exportHtmlBtn").style.display=editMode?"inline-block":"none";
-      document.getElementById("resetBtn").style.display=editMode?"inline-block":"none";
-      document.getElementById("addRequestBtn").style.display=editMode?"inline-block":"none";
-      document.getElementById("editPanel").style.display=editMode?"block":"none";
-      document.getElementById("editToggle").textContent=editMode?"보기 모드로 전환":"편집 모드";
-      document.getElementById("editToggle").classList.toggle("active",editMode);
-      document.getElementById("requestHint").textContent=editMode?"체크박스로 완료 상태를 변경할 수 있습니다.":"완료되지 않은 항목은 다음 주로 이월합니다.";
-      document.getElementById("calendarHint").textContent=editMode?"편집 모드: 날짜를 클릭해 일정을 추가·수정합니다.":"월별 주요 작업과 논현 방문 일정을 확인합니다.";
+  function readEmbeddedDefaultData(){
+    try { return JSON.parse(DASHBOARD_DATA_NODE?.textContent || "{}"); }
+    catch(e){ console.error("Failed to parse embedded dashboard data", e); return {weeks:[], kpis:[], requests:[], events:[]}; }
+  }
+  const defaultData = readEmbeddedDefaultData();
+  function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+  function loadData(){
+    try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : clone(defaultData); }
+    catch(e){ return clone(defaultData); }
+  }
+  let data = loadData();
+  data.weeks ||= []; data.kpis ||= []; data.requests ||= []; data.events ||= [];
+  data.requests = data.requests.map(req => ({completedWeek:null, ...req}));
+
+  function todayLocal(){ const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+  function dateKeyFromDate(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
+  function monthKeyFromDate(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`; }
+  function initialMonth(){ const key = monthKeyFromDate(todayLocal()); return ["2026-05","2026-06","2026-07","2026-08"].includes(key) ? key : "2026-05"; }
+  function projectWeekNumber(date){
+    const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    if(d < PROJECT_START || d > PROJECT_END) return null;
+    return Math.floor((d - PROJECT_START) / (7 * 24 * 60 * 60 * 1000)) + 1;
+  }
+  function initialWeek(){ const w = projectWeekNumber(todayLocal()); return w && w >= 1 && w <= 14 ? w : 1; }
+
+  let selectedWeek = initialWeek();
+  let selectedMonth = initialMonth();
+  let editMode = false;
+  let editingDate = null;
+
+  function saveData(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+  function currentWeek(){ return data.weeks.find(w => Number(w.week) === Number(selectedWeek)) || data.weeks[0] || {week:1,label:"Week 1",period:"",headline:"",summary:"",priority:"",progress:0,status:"pending",tasks:[]}; }
+  function escapeHtml(str){ return String(str ?? "").replace(/[&<>"']/g, s => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[s])); }
+  function escapeAttr(str){ return escapeHtml(str); }
+  function statusClass(status){ if(status === "완료") return "done"; if(status === "진행 중") return "doing"; if(status === "확인 필요") return "need"; if(status === "예정") return "todo"; return "none"; }
+  function eventMeta(type){ return type === "visit" ? {color:"#2563eb", text:"#1e40af"} : {color:"#9ca3af", text:"#374151"}; }
+  function byId(id){ return document.getElementById(id); }
+
+  function renderMode(){
+    byId("app")?.classList.toggle("edit-mode", editMode);
+    [["editPill","inline-flex"],["backupBtn","inline-block"],["exportHtmlBtn","inline-block"],["resetBtn","inline-block"],["addRequestBtn","inline-block"],["editPanel","block"]].forEach(([id,display])=>{ const el=byId(id); if(el) el.style.display = editMode ? display : "none"; });
+    const t=byId("editToggle"); if(t){ t.textContent = editMode ? "보기 모드로 전환" : "편집 모드"; t.classList.toggle("active", editMode); }
+    const rh=byId("requestHint"); if(rh) rh.textContent = editMode ? "체크박스로 완료 상태를 변경할 수 있습니다." : "완료되지 않은 항목은 다음 주로 이월합니다.";
+    const ch=byId("calendarHint"); if(ch) ch.textContent = editMode ? "편집 모드: 날짜를 클릭해 일정을 추가·수정합니다." : "월별 주요 작업과 논현 방문 일정을 확인합니다.";
+  }
+
+  function renderWeekControls(){
+    const select = byId("weekSelect");
+    if(select){
+      select.innerHTML = data.weeks.map(w => `<option value="${w.week}">${escapeHtml(w.label)} · ${escapeHtml(w.period)}</option>`).join("");
+      select.value = selectedWeek;
+      select.onchange = e => { selectedWeek = Number(e.target.value); renderAll(); };
     }
-    function renderWeekControls(){
-      const select=document.getElementById("weekSelect");
-      select.innerHTML=data.weeks.map(w=>`<option value="${w.week}">${w.label} · ${w.period}</option>`).join("");
-      select.value=selectedWeek; select.onchange=e=>{selectedWeek=Number(e.target.value);renderAll()};
-      const grid=document.getElementById("weekGrid"); grid.innerHTML="";
-      data.weeks.forEach(w=>{const btn=document.createElement("button");const pending=w.status==="pending";btn.className="week-btn"+(w.week===selectedWeek?" active":pending?"":" scheduled");btn.innerHTML=`<div class="w">${w.label}</div><div class="p">${w.period}</div>`;btn.onclick=()=>{selectedWeek=w.week;renderAll()};grid.appendChild(btn)})
-    }
-    function renderCurrentWeek(){
-      const w=currentWeek();
-      document.getElementById("currentWeek").textContent=w.label;document.getElementById("currentPeriod").textContent=w.period;
-      document.getElementById("weekTag").textContent=`${w.label} · ${w.period}`;
-      document.getElementById("priorityTag").textContent=w.status==="pending"?"세부 일정 미정":`우선순위 ${w.priority}`;
-      document.getElementById("priorityTag").className="tag "+(w.status==="pending"?"pending":"priority");
-      document.getElementById("headline").textContent=w.headline;document.getElementById("summary").textContent=w.summary;
-      document.getElementById("progressText").textContent=`${w.progress}%`;document.getElementById("progressFill").style.width=`${w.progress}%`;
-      const list=document.getElementById("taskList");list.innerHTML="";
-      w.tasks.forEach(t=>{const row=document.createElement("div");row.className="task";row.innerHTML=`<div class="task-name">${escapeHtml(t.name)}</div><div class="owner">${escapeHtml(t.owner)}</div><span class="status ${statusClass(t.status)}">${escapeHtml(t.status)}</span>`;list.appendChild(row)})
-    }
-    function renderKpis(){
-      const el=document.getElementById("kpiList");el.innerHTML="";
-      data.kpis.forEach(k=>{const div=document.createElement("div");div.className=`kpi ${k.tone}`;div.innerHTML=`<div class="kpi-title">${escapeHtml(k.title)}</div><div class="kpi-value">${escapeHtml(k.value)}</div><div class="kpi-desc">${escapeHtml(k.desc)}</div>`;el.appendChild(div)})
-    }
-    function visibleRequests(){
-      return data.requests.filter(req => {
-        if(!req.done) return true;
-        if(!req.completedWeek) return true;
-        return Number(req.completedWeek) >= Number(selectedWeek);
+    const grid = byId("weekGrid");
+    if(grid){
+      grid.innerHTML = "";
+      data.weeks.forEach(w => {
+        const btn = document.createElement("button");
+        const pending = w.status === "pending";
+        btn.className = "week-btn" + (Number(w.week) === Number(selectedWeek) ? " active" : pending ? "" : " scheduled");
+        btn.innerHTML = `<div class="w">${escapeHtml(w.label)}</div><div class="p">${escapeHtml(w.period)}</div>`;
+        btn.onclick = () => { selectedWeek = Number(w.week); renderAll(); };
+        grid.appendChild(btn);
       });
     }
-    function requestSourceIndex(req){
-      return data.requests.indexOf(req);
+  }
+
+  function renderCurrentWeek(){
+    const w = currentWeek();
+    if(byId("currentWeek")) byId("currentWeek").textContent = w.label || `Week ${w.week}`;
+    if(byId("currentPeriod")) byId("currentPeriod").textContent = w.period || "";
+    if(byId("weekTag")) byId("weekTag").textContent = `${w.label || `Week ${w.week}`} · ${w.period || ""}`;
+    if(byId("priorityTag")){
+      byId("priorityTag").textContent = w.status === "pending" ? "세부 일정 미정" : `우선순위 ${w.priority || "-"}`;
+      byId("priorityTag").className = "tag " + (w.status === "pending" ? "pending" : "priority");
     }
-    function renderRequests(){
-      const el=document.getElementById("requestList");el.innerHTML="";
-      const list=visibleRequests();
-      list.forEach((req)=>{
-        const index=requestSourceIndex(req);
-        const row=document.createElement("label");
-        row.className="req"+(editMode?"":" view");
-        const completedLabel = req.done ? `완료${req.completedWeek ? " · W"+req.completedWeek : ""}` : "이월";
-        row.innerHTML=`<input type="checkbox" ${req.done?"checked":""} ${editMode?"":"disabled"}><span class="req-text" style="${req.done?"text-decoration:line-through;opacity:.62":""}">${escapeHtml(req.text)}</span><span class="carry ${req.done?"done":""}">${completedLabel}</span>${editMode?'<button type="button" class="mini-btn danger">삭제</button>':""}`;
-        row.querySelector("input").onchange=()=>{
-          if(!editMode)return;
-          data.requests[index].done=!data.requests[index].done;
-          data.requests[index].completedWeek=data.requests[index].done ? selectedWeek : null;
-          saveData();
-          renderRequests();
-        };
-        const del=row.querySelector("button");
-        if(del){
-          del.onclick=e=>{
-            e.preventDefault();
-            data.requests.splice(index,1);
-            saveData();
-            renderRequests();
-          };
-        }
-        el.appendChild(row);
+    if(byId("headline")) byId("headline").textContent = w.headline || "";
+    if(byId("summary")) byId("summary").textContent = w.summary || "";
+    if(byId("progressText")) byId("progressText").textContent = `${w.progress || 0}%`;
+    if(byId("progressFill")) byId("progressFill").style.width = `${w.progress || 0}%`;
+    const list = byId("taskList");
+    if(list){
+      list.innerHTML = "";
+      (w.tasks || []).forEach(t => {
+        const row = document.createElement("div");
+        row.className = "task";
+        row.innerHTML = `<div class="task-name">${escapeHtml(t.name)}</div><div class="owner">${escapeHtml(t.owner)}</div><span class="status ${statusClass(t.status)}">${escapeHtml(t.status)}</span>`;
+        list.appendChild(row);
       });
-      if(list.length===0){
-        const empty=document.createElement("div");
-        empty.style.cssText="border:1px dashed #d1d5db;border-radius:12px;padding:12px;color:#6b7280;font-size:13.5px;background:#fff";
-        empty.textContent="해당 주차에 표시할 요청/협력 사항이 없습니다.";
-        el.appendChild(empty);
-      }
     }
+  }
 
-    function renderCalendar(){
-      const grid=document.getElementById("calendarGrid");grid.innerHTML="";
-      ["주차","월","화","수","목","금","토","일"].forEach(d=>{const div=document.createElement("div");div.className="dow";div.textContent=d;grid.appendChild(div)});
-      const [year,month]=selectedMonth.split("-").map(Number);
-      const firstDaySunBased=new Date(year,month-1,1).getDay();
-      const firstDay=(firstDaySunBased+6)%7; // Monday=0, Sunday=6
-      const daysInMonth=new Date(year,month,0).getDate();
-      const todayKey=dateKeyFromDate(todayLocal());
-      const map={}; data.events.forEach(e=>{map[e.date]=e});
+  function renderKpis(){
+    const el = byId("kpiList"); if(!el) return;
+    el.innerHTML = "";
+    data.kpis.forEach(k => {
+      const div = document.createElement("div");
+      div.className = `kpi ${k.tone || "blue"}`;
+      div.innerHTML = `<div class="kpi-title">${escapeHtml(k.title)}</div><div class="kpi-value">${escapeHtml(k.value)}</div><div class="kpi-desc">${escapeHtml(k.desc)}</div>`;
+      el.appendChild(div);
+    });
+  }
 
-      const cells=[];
-      for(let i=0;i<firstDay;i++) cells.push(null);
-      for(let day=1;day<=daysInMonth;day++) cells.push(day);
-      while(cells.length % 7 !== 0) cells.push(null);
-
-      for(let row=0; row<cells.length/7; row++){
-        const weekDays=cells.slice(row*7,row*7+7);
-        const realDates=weekDays
-          .filter(day=>day!==null)
-          .map(day=>new Date(year,month-1,day));
-        const weekNums=realDates
-          .map(d=>projectWeekNumber(d))
-          .filter(Boolean);
-        const weekNum=weekNums.length ? weekNums[0] : null;
-        const currentWeekActive = weekNum === selectedWeek;
-        const label=document.createElement("div");
-        label.className="week-row-label"+(currentWeekActive?" active":"");
-        label.textContent=weekNum ? `W${weekNum}` : "-";
-        grid.appendChild(label);
-
-        weekDays.forEach(day=>{
-          if(day===null){
-            const blank=document.createElement("div");
-            grid.appendChild(blank);
-            return;
-          }
-          const key=`${year}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
-          const ev=map[key];
-          const meta=eventMeta(ev?.type);
-          const cell=document.createElement("button");
-          cell.type="button";
-          cell.className="day"+(ev?" has-event":"")+(ev?.type==="visit"?" visit":"")+(key===todayKey?" today":"");
-          cell.innerHTML=`<div class="day-num">${day}</div>`+(ev?`<div class="event" style="border-left-color:${meta.color};color:${meta.text}">${escapeHtml(ev.label)}</div>`:"");
-          cell.onclick=()=>{if(editMode)openEventModal(key)};
-          grid.appendChild(cell);
-        });
-      }
+  function visibleRequests(){ return data.requests.filter(req => !req.done || !req.completedWeek || Number(req.completedWeek) >= Number(selectedWeek)); }
+  function renderRequests(){
+    const el = byId("requestList"); if(!el) return;
+    el.innerHTML = "";
+    const list = visibleRequests();
+    list.forEach(req => {
+      const index = data.requests.indexOf(req);
+      const row = document.createElement("label");
+      row.className = "req" + (editMode ? "" : " view");
+      const completedLabel = req.done ? `완료${req.completedWeek ? " · W" + req.completedWeek : ""}` : "이월";
+      row.innerHTML = `<input type="checkbox" ${req.done ? "checked" : ""} ${editMode ? "" : "disabled"}><span class="req-text" style="${req.done ? "text-decoration:line-through;opacity:.62" : ""}">${escapeHtml(req.text)}</span><span class="carry ${req.done ? "done" : ""}">${completedLabel}</span>${editMode ? '<button type="button" class="mini-btn danger">삭제</button>' : ""}`;
+      row.querySelector("input").onchange = () => { if(!editMode) return; data.requests[index].done = !data.requests[index].done; data.requests[index].completedWeek = data.requests[index].done ? selectedWeek : null; saveData(); renderRequests(); };
+      const del = row.querySelector("button");
+      if(del) del.onclick = e => { e.preventDefault(); data.requests.splice(index, 1); saveData(); renderRequests(); };
+      el.appendChild(row);
+    });
+    if(list.length === 0){
+      const empty = document.createElement("div");
+      empty.style.cssText = "border:1px dashed #d1d5db;border-radius:12px;padding:12px;color:#6b7280;font-size:13.5px;background:#fff";
+      empty.textContent = "해당 주차에 표시할 요청/협력 사항이 없습니다.";
+      el.appendChild(empty);
     }
+  }
 
-    function renderEditPanel(){
-      if(!editMode)return; const w=currentWeek();
-      document.getElementById("editPeriod").value=w.period;document.getElementById("editPriority").value=w.priority;document.getElementById("editHeadline").value=w.headline;document.getElementById("editSummary").value=w.summary;document.getElementById("editProgress").value=w.progress;document.getElementById("editProgressText").textContent=`${w.progress}%`;
-      const list=document.getElementById("editTaskList");list.innerHTML="";
-      w.tasks.forEach((task,index)=>{const row=document.createElement("div");row.style.display="grid";row.style.gridTemplateColumns="minmax(420px, 1fr) 130px 150px auto";row.style.gap="6px";row.style.alignItems="center";row.innerHTML=`<input value="${escapeAttr(task.name)}"><select><option ${task.status==="완료"?"selected":""}>완료</option><option ${task.status==="진행 중"?"selected":""}>진행 중</option><option ${task.status==="예정"?"selected":""}>예정</option><option ${task.status==="확인 필요"?"selected":""}>확인 필요</option><option ${task.status==="미정"?"selected":""}>미정</option></select><input value="${escapeAttr(task.owner)}"><button class="mini-btn danger">삭제</button>`;const inputs=row.querySelectorAll("input,select");inputs[0].oninput=()=>updateTask(index,"name",inputs[0].value);inputs[1].onchange=()=>updateTask(index,"status",inputs[1].value);inputs[2].oninput=()=>updateTask(index,"owner",inputs[2].value);row.querySelector("button").onclick=()=>{w.tasks.splice(index,1);saveData();renderAll()};list.appendChild(row)})
+  function renderCalendar(){
+    const grid = byId("calendarGrid"); if(!grid) return;
+    grid.innerHTML = "";
+    ["주차","월","화","수","목","금","토","일"].forEach(d => { const div=document.createElement("div"); div.className="dow"; div.textContent=d; grid.appendChild(div); });
+    const [year, month] = selectedMonth.split("-").map(Number);
+    const firstDay = (new Date(year, month-1, 1).getDay() + 6) % 7;
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const todayKey = dateKeyFromDate(todayLocal());
+    const map = {}; data.events.forEach(e => { map[e.date] = e; });
+    const cells = [];
+    for(let i=0;i<firstDay;i++) cells.push(null);
+    for(let day=1;day<=daysInMonth;day++) cells.push(day);
+    while(cells.length % 7 !== 0) cells.push(null);
+    for(let row=0; row<cells.length/7; row++){
+      const weekDays = cells.slice(row*7, row*7+7);
+      const realDates = weekDays.filter(day => day !== null).map(day => new Date(year, month-1, day));
+      const weekNums = realDates.map(d => projectWeekNumber(d)).filter(Boolean);
+      const weekNum = weekNums.length ? weekNums[0] : null;
+      const label = document.createElement("div");
+      label.className = "week-row-label" + (weekNum === selectedWeek ? " active" : "");
+      label.textContent = weekNum ? `W${weekNum}` : "-";
+      grid.appendChild(label);
+      weekDays.forEach(day => {
+        if(day === null){ grid.appendChild(document.createElement("div")); return; }
+        const key = `${year}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+        const ev = map[key]; const meta = eventMeta(ev?.type);
+        const cell = document.createElement("button");
+        cell.type = "button";
+        cell.className = "day" + (ev ? " has-event" : "") + (ev?.type === "visit" ? " visit" : "") + (key === todayKey ? " today" : "");
+        cell.innerHTML = `<div class="day-num">${day}</div>` + (ev ? `<div class="event" style="border-left-color:${meta.color};color:${meta.text}">${escapeHtml(ev.label)}</div>` : "");
+        cell.onclick = () => { if(editMode) openEventModal(key); };
+        grid.appendChild(cell);
+      });
     }
-    function updateWeek(field,value){currentWeek()[field]=value;saveData();renderCurrentWeek();renderEditPanel()}
-    function updateTask(index,field,value){currentWeek().tasks[index][field]=value;saveData();renderCurrentWeek()}
-    function openEventModal(date){
-      editingDate=date;const ev=data.events.find(e=>e.date===date);
-      document.getElementById("modalDateText").textContent=date;document.getElementById("modalEventLabel").value=ev?.label||"";document.getElementById("modalEventType").value=ev?.type||"work";document.getElementById("eventModal").classList.add("open");setTimeout(()=>document.getElementById("modalEventLabel").focus(),20)
-    }
-    function closeEventModal(){document.getElementById("eventModal").classList.remove("open");editingDate=null}
-    function saveEvent(){const label=document.getElementById("modalEventLabel").value.trim();const type=document.getElementById("modalEventType").value;data.events=data.events.filter(e=>e.date!==editingDate);if(label){data.events.push({date:editingDate,label,type});data.events.sort((a,b)=>a.date.localeCompare(b.date))}saveData();closeEventModal();renderCalendar()}
-    function deleteEvent(){data.events=data.events.filter(e=>e.date!==editingDate);saveData();closeEventModal();renderCalendar()}
-    function backupJson(){const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="studio-mono-dashboard-data.json";a.click();URL.revokeObjectURL(url)}
+  }
 
+  function renderEditPanel(){
+    if(!editMode) return;
+    const w = currentWeek();
+    if(byId("editPeriod")) byId("editPeriod").value = w.period || "";
+    if(byId("editPriority")) byId("editPriority").value = w.priority || "";
+    if(byId("editHeadline")) byId("editHeadline").value = w.headline || "";
+    if(byId("editSummary")) byId("editSummary").value = w.summary || "";
+    if(byId("editProgress")) byId("editProgress").value = w.progress || 0;
+    if(byId("editProgressText")) byId("editProgressText").textContent = `${w.progress || 0}%`;
+    const list = byId("editTaskList"); if(!list) return;
+    list.innerHTML = "";
+    (w.tasks ||= []).forEach((task,index) => {
+      const row = document.createElement("div");
+      row.style.display = "grid"; row.style.gridTemplateColumns = "minmax(420px, 1fr) 130px 150px auto"; row.style.gap = "6px"; row.style.alignItems = "center";
+      row.innerHTML = `<input value="${escapeAttr(task.name)}"><select><option ${task.status==="완료"?"selected":""}>완료</option><option ${task.status==="진행 중"?"selected":""}>진행 중</option><option ${task.status==="예정"?"selected":""}>예정</option><option ${task.status==="확인 필요"?"selected":""}>확인 필요</option><option ${task.status==="미정"?"selected":""}>미정</option></select><input value="${escapeAttr(task.owner)}"><button type="button" class="mini-btn danger">삭제</button>`;
+      const inputs = row.querySelectorAll("input,select");
+      inputs[0].oninput = () => updateTask(index, "name", inputs[0].value);
+      inputs[1].onchange = () => updateTask(index, "status", inputs[1].value);
+      inputs[2].oninput = () => updateTask(index, "owner", inputs[2].value);
+      row.querySelector("button").onclick = () => { w.tasks.splice(index,1); saveData(); renderAll(); };
+      list.appendChild(row);
+    });
+  }
 
-    function exportIndexHtml(){
-      saveData();
+  function updateWeek(field,value){ currentWeek()[field] = field === "progress" ? Number(value) : value; saveData(); renderCurrentWeek(); renderEditPanel(); }
+  function updateTask(index,field,value){ currentWeek().tasks[index][field] = value; saveData(); renderCurrentWeek(); }
+  function openEventModal(date){ editingDate = date; const ev = data.events.find(e => e.date === date); byId("modalDateText").textContent = date; byId("modalEventLabel").value = ev?.label || ""; byId("modalEventType").value = ev?.type || "work"; byId("eventModal").classList.add("open"); setTimeout(()=>byId("modalEventLabel").focus(),20); }
+  function closeEventModal(){ byId("eventModal").classList.remove("open"); editingDate = null; }
+  function saveEvent(){ const label = byId("modalEventLabel").value.trim(); const type = byId("modalEventType").value; data.events = data.events.filter(e => e.date !== editingDate); if(label){ data.events.push({date:editingDate, label, type}); data.events.sort((a,b)=>a.date.localeCompare(b.date)); } saveData(); closeEventModal(); renderCalendar(); }
+  function deleteEvent(){ data.events = data.events.filter(e => e.date !== editingDate); saveData(); closeEventModal(); renderCalendar(); }
+  function backupJson(){ const blob = new Blob([JSON.stringify(data,null,2)], {type:"application/json"}); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "studio-mono-dashboard-data.json"; a.click(); URL.revokeObjectURL(url); }
 
-      let output = "<!doctype html>\n" + document.documentElement.outerHTML;
-      const nextVersion = "vo" + Date.now();
-      const embeddedJson = JSON.stringify(data, null, 2).replace(/<\//g, "<\\/");
+  function exportIndexHtml(){
+    saveData();
+    const nextVersion = "vo" + Date.now();
+    const embeddedJson = JSON.stringify(data, null, 2).replace(/<\//g, "<\\/");
+    const nextDataBlock = '<script data-version="' + nextVersion + '" id="dashboard-data" type="application/json">\n' + embeddedJson + '\n<' + '/script>';
+    const doc = document.documentElement.cloneNode(true);
+    doc.querySelectorAll('.modal-backdrop.open').forEach(el => el.classList.remove('open'));
+    doc.querySelectorAll('script#dashboard-data, script[data-version][type="application/json"]').forEach(el => el.remove());
+    const body = doc.querySelector('body');
+    const firstRuntimeScript = Array.from(doc.querySelectorAll('script')).find(s => !s.type || s.type === 'text/javascript');
+    const parser = new DOMParser();
+    const dataDoc = parser.parseFromString(nextDataBlock, 'text/html');
+    const dataNode = dataDoc.querySelector('script');
+    if(firstRuntimeScript) body.insertBefore(dataNode, firstRuntimeScript); else body.appendChild(dataNode);
+    const output = '<!doctype html>\n' + doc.outerHTML;
+    const blob = new Blob([output], {type:'text/html'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'index.html'; a.click(); URL.revokeObjectURL(url);
+  }
 
-      const nextDataBlock = `<script id="dashboard-data" type="application/json" data-version="vo1781233685430">
-{
-  "weeks": [
-    {
-      "week": 1,
-      "label": "Week 1",
-      "period": "5/11 - 5/17",
-      "headline": "방향성 설정 · 워크플로우 세팅 · 대시보드 제작",
-      "summary": "본격적인 작업을 시작하는 첫 주입니다. 프로젝트 방향성, 데이터 공유 방식, 보고 체계, 주간 대시보드 구조를 세팅하고 초기 숏츠형 마케팅 콘텐츠 기획을 시작합니다.",
-      "priority": "높음",
-      "progress": 95,
-      "status": "scheduled",
-      "tasks": [
-        {
-          "name": "프로젝트 방향성 및 3개월 KPI 기준 정리",
-          "status": "완료",
-          "owner": "SH"
-        },
-        {
-          "name": "주간 보고 및 공유용 대시보드 제작",
-          "status": "완료",
-          "owner": "SH"
-        },
-        {
-          "name": "스튜디오 모노 공식 사이트·공간 정보 확인",
-          "status": "완료",
-          "owner": "SH"
-        },
-        {
-          "name": "초기 숏츠형 마케팅 콘텐츠 기획",
-          "status": "완료",
-          "owner": "SH"
-        },
-        {
-          "name": "자료 공유 및 권한 요청 항목 정리",
-          "status": "확인 필요",
-          "owner": "스튜디오 모노"
-        }
-      ]
-    },
-    {
-      "week": 2,
-      "label": "Week 2",
-      "period": "5/18 - 5/24",
-      "headline": "쇼츠 제작 · 일본어 콘텐츠 제작 시작",
-      "summary": "초기 마케팅 콘텐츠를 빠르게 확보하는 주간입니다. 숏츠 제작을 시작하고, 사이트·팜플렛·블로그 게시물에 활용할 일본어 콘텐츠 제작을 병행합니다.\n\nRunway와 Kling을 중심으로 생성형 AI 영상 제작 툴을 비교 검토.\nAI 활용 워크 플로우 정립 및 프레임 워크 활성화 준비 진행중.\n\nMONO RABI 캐릭터 IP 기획 및 제작 완료.\n고정 IP 생성 디자인 & 아이덴티티 데이터 베이스 제작 완료.\n\n스튜디오 모노 홍보 쇼츠 영상 1차 제작 완료.",
-      "priority": "높음",
-      "progress": 90,
-      "status": "scheduled",
-      "tasks": [
-        {
-          "name": "스튜디오 모노 쇼츠 1차 제작",
-          "status": "완료",
-          "owner": "SH"
-        },
-        {
-          "name": "팜플렛/소개자료 일본어 문구 제작",
-          "status": "진행 중",
-          "owner": "SH"
-        },
-        {
-          "name": "블로그 게시물 활용 방향 정리",
-          "status": "완료",
-          "owner": "SH"
-        },
-        {
-          "name": "생성형 AI 영상 제작 툴 검토 및 적용",
-          "status": "완료",
-          "owner": "SH"
-        },
-        {
-          "name": "MONO RABI 캐릭터 IP 기획 및 제작",
-          "status": "완료",
-          "owner": "SH"
-        }
-      ]
-    },
-    {
-      "week": 3,
-      "label": "Week 3",
-      "period": "5/25 - 5/31",
-      "headline": "MONO 캐릭터 재구성 작업",
-      "summary": "금주는 스튜디오 모노 대표 캐릭터 MONO를 재구성하고, 이미지 생성 과정에서 발생한 캐릭터 아웃풋 붕괴 문제를 해결하기 위해 프로젝트 설정과 캐릭터 IP 기준을 처음부터 재정립한 주간입니다.",
-      "priority": "높음",
-      "progress": 80,
-      "status": "planned",
-      "tasks": [
-        {
-          "name": "스튜디오 모노 캐릭터 리뉴얼",
-          "status": "완료",
-          "owner": "SH"
-        },
-        {
-          "name": "MONO 캐릭터의 고정 기준 재정리",
-          "status": "완료",
-          "owner": "SH"
-        },
-        {
-          "name": "마스터 이미지 기준 우선순위 확립",
-          "status": "진행 중",
-          "owner": "SH"
-        },
-        {
-          "name": "새 프로젝트와 기존 코어 프로젝트의 운영 방식 재검토",
-          "status": "진행 중",
-          "owner": "SH"
-        },
-        {
-          "name": "이미지 생성 시 금지 요소 정리",
-          "status": "완료",
-          "owner": "SH"
-        }
-      ]
-    },
-    {
-      "week": 4,
-      "label": "Week 4",
-      "period": "6/1 - 6/7",
-      "headline": "MONO 캐릭터 컨펌 · 쇼츠 배포 · Notion 운영 세팅 · 타겟 컨택 시작",
-      "summary": "다음주는 재구성된 MONO 캐릭터 컨셉을 최종 컨펌하고, 해당 캐릭터를 기반으로 쇼츠를 완성 및 배포하는 실행 주간입니다. 동시에 캐릭터 컨셉을 반영한 콘텐츠 제작, 스튜디오 모노 전용 Notion 워크스페이스 커스텀, 일본향 타겟 고객층 리서치 및 1차 다이렉트 컨택을 시작합니다.\n\n금주에는 일본 고객 타겟 리스트업 및 DM 직접 컨택을 본격적으로 진행할 예정이었으나, 운영 우선순위와 콘텐츠 제작 일정이 조정되면서 해당 작업은 차주 이후로 일부 이월되었습니다.\n대신 스튜디오 모노 한국 인스타그램 계정을 활용한 월드컵 단체 응원 공간 콘텐츠 제작 및 운영에 집중했습니다. 아테네 공간을 월드컵 단체 관람, 응원, 프라이빗 파티 공간으로 활용할 수 있다는 방향으로 콘텐츠를 기획했으며, 한국 고객이 직관적으로 이해할 수 있도록 대형 스크린, 30~35인 수용, 프라이빗 공간, 단체 응원 가능성을 중심으로 구성했습니다.\n이번 진행을 통해 일본 인스타그램 및 일본 고객 마케팅뿐만 아니라, 한국 계정 활성화와 광고 게시 운영도 함께 강화할 필요성이 확인되었습니다.",
-      "priority": "높음",
-      "progress": 80,
-      "status": "planned",
-      "tasks": [
-        {
-          "name": "MONO 캐릭터 기반 쇼츠 완성 및 업로드",
-          "status": "완료",
-          "owner": "SH"
-        },
-        {
-          "name": "완성 쇼츠 SNS 업로드 및 초기 반응 확인",
-          "status": "완료",
-          "owner": "SH"
-        },
-        {
-          "name": "캐릭터 컨셉 반영 카드형 콘텐츠·포스터·공간 소개 이미지 제작",
-          "status": "진행 중",
-          "owner": "SH"
-        },
-        {
-          "name": "스튜디오 모노 대시보드 Github 업로드 및 운영 준비",
-          "status": "완료",
-          "owner": "SH"
-        },
-        {
-          "name": "일본향 타겟 고객층 리서치 및 리스트업 예정",
-          "status": "진행 중",
-          "owner": "SH"
-        },
-        {
-          "name": "확보 타겟 대상 1차 다이렉트 컨택 시작",
-          "status": "진행 중",
-          "owner": "SH"
-        },
-        {
-          "name": "스튜디오 모노 월드컵 홍보 컨텐츠 제작 및 게시",
-          "status": "완료",
-          "owner": "SH"
-        },
-        {
-          "name": "Meta business suite 마케팅 캠페인 커스텀",
-          "status": "완료",
-          "owner": "SH"
-        }
-      ]
-    },
-    {
-      "week": 5,
-      "label": "Week 5",
-      "period": "6/8 ~ 6/14",
-      "headline": "콘텐츠 반응 분석 · Meta 광고 운영 시작 · GitHub 대시보드 재공유",
-      "summary": "금주는 지난주 제작 및 운영한 월드컵 관련 콘텐츠의 반응을 확인하고, 한국 고객 대상 콘텐츠 운영 방향을 점검하는 주간입니다.\n\n금주부터 스튜디오 모노 한국 인스타그램 계정을 대상으로 Meta Business Suite 광고 캠페인 비용 지불 및 운영을 시작했습니다. 단순 게시물 업로드에 그치지 않고, 광고 캠페인을 통해 콘텐츠 도달 범위, 잠재 고객 반응, 공간 대관 문의 가능성을 검증합니다.\n\n또한 기존 Netlify 기반 테스트 대시보드를 GitHub Pages 방식으로 전환하여 재공유하고, 금주 진행 상황을 반영한 최신 대시보드로 내부 공유 체계를 다시 정리합니다.",
-      "priority": "높음",
-      "progress": 45,
-      "status": "pending",
-      "tasks": [
-        {
-          "name": "일본향 타겟 고객층 리서치 및 리스트업 예정",
-          "status": "진행 중",
-          "owner": "SH"
-        },
-        {
-          "name": "확보 타겟 대상 1차 다이렉트 컨택 시작",
-          "status": "진행 중",
-          "owner": "SH"
-        },
-        {
-          "name": "월드컵 콘텐츠 반응 피드백 분석",
-          "status": "진행 중",
-          "owner": "SH"
-        },
-        {
-          "name": "Meta Business Suite 광고 캠페인 비용 지불 및 운영 시작",
-          "status": "진행 중",
-          "owner": "SH"
-        },
-        {
-          "name": "광고 타겟, 예산, 소재 반응 세분화 관리",
-          "status": "진행 중",
-          "owner": "SH"
-        },
-        {
-          "name": "GitHub Pages 기반 대시보드 업로드 및 재공유",
-          "status": "완료",
-          "owner": "SH"
-        }
-      ]
-    },
-    {
-      "week": 6,
-      "label": "Week 6",
-      "period": "추후 설정",
-      "headline": "세부 일정 미정",
-      "summary": "이 주차의 세부 작업은 아직 확정하지 않습니다. 금주 및 다음주 진행 상황, 촬영 결과, 컨택 반응, 공간 사용 가능 여부, 스튜디오 모노 측 의사결정에 따라 단계적으로 설정합니다.",
-      "priority": "미정",
-      "progress": 0,
-      "status": "pending",
-      "tasks": [
-        {
-          "name": "세부 작업은 진행 상황에 따라 추후 설정",
-          "status": "미정",
-          "owner": "SH"
-        }
-      ]
-    },
-    {
-      "week": 7,
-      "label": "Week 7",
-      "period": "추후 설정",
-      "headline": "세부 일정 미정",
-      "summary": "이 주차의 세부 작업은 아직 확정하지 않습니다. 금주 및 다음주 진행 상황, 촬영 결과, 컨택 반응, 공간 사용 가능 여부, 스튜디오 모노 측 의사결정에 따라 단계적으로 설정합니다.",
-      "priority": "미정",
-      "progress": 0,
-      "status": "pending",
-      "tasks": [
-        {
-          "name": "세부 작업은 진행 상황에 따라 추후 설정",
-          "status": "미정",
-          "owner": "SH"
-        }
-      ]
-    },
-    {
-      "week": 8,
-      "label": "Week 8",
-      "period": "추후 설정",
-      "headline": "세부 일정 미정",
-      "summary": "이 주차의 세부 작업은 아직 확정하지 않습니다. 금주 및 다음주 진행 상황, 촬영 결과, 컨택 반응, 공간 사용 가능 여부, 스튜디오 모노 측 의사결정에 따라 단계적으로 설정합니다.",
-      "priority": "미정",
-      "progress": 0,
-      "status": "pending",
-      "tasks": [
-        {
-          "name": "세부 작업은 진행 상황에 따라 추후 설정",
-          "status": "미정",
-          "owner": "SH"
-        }
-      ]
-    },
-    {
-      "week": 9,
-      "label": "Week 9",
-      "period": "추후 설정",
-      "headline": "세부 일정 미정",
-      "summary": "이 주차의 세부 작업은 아직 확정하지 않습니다. 금주 및 다음주 진행 상황, 촬영 결과, 컨택 반응, 공간 사용 가능 여부, 스튜디오 모노 측 의사결정에 따라 단계적으로 설정합니다.",
-      "priority": "미정",
-      "progress": 0,
-      "status": "pending",
-      "tasks": [
-        {
-          "name": "세부 작업은 진행 상황에 따라 추후 설정",
-          "status": "미정",
-          "owner": "SH"
-        }
-      ]
-    },
-    {
-      "week": 10,
-      "label": "Week 10",
-      "period": "추후 설정",
-      "headline": "세부 일정 미정",
-      "summary": "이 주차의 세부 작업은 아직 확정하지 않습니다. 금주 및 다음주 진행 상황, 촬영 결과, 컨택 반응, 공간 사용 가능 여부, 스튜디오 모노 측 의사결정에 따라 단계적으로 설정합니다.",
-      "priority": "미정",
-      "progress": 0,
-      "status": "pending",
-      "tasks": [
-        {
-          "name": "세부 작업은 진행 상황에 따라 추후 설정",
-          "status": "미정",
-          "owner": "SH"
-        }
-      ]
-    },
-    {
-      "week": 11,
-      "label": "Week 11",
-      "period": "추후 설정",
-      "headline": "세부 일정 미정",
-      "summary": "이 주차의 세부 작업은 아직 확정하지 않습니다. 금주 및 다음주 진행 상황, 촬영 결과, 컨택 반응, 공간 사용 가능 여부, 스튜디오 모노 측 의사결정에 따라 단계적으로 설정합니다.",
-      "priority": "미정",
-      "progress": 0,
-      "status": "pending",
-      "tasks": [
-        {
-          "name": "세부 작업은 진행 상황에 따라 추후 설정",
-          "status": "미정",
-          "owner": "SH"
-        }
-      ]
-    },
-    {
-      "week": 12,
-      "label": "Week 12",
-      "period": "추후 설정",
-      "headline": "세부 일정 미정",
-      "summary": "이 주차의 세부 작업은 아직 확정하지 않습니다. 금주 및 다음주 진행 상황, 촬영 결과, 컨택 반응, 공간 사용 가능 여부, 스튜디오 모노 측 의사결정에 따라 단계적으로 설정합니다.",
-      "priority": "미정",
-      "progress": 0,
-      "status": "pending",
-      "tasks": [
-        {
-          "name": "세부 작업은 진행 상황에 따라 추후 설정",
-          "status": "미정",
-          "owner": "SH"
-        }
-      ]
-    },
-    {
-      "week": 13,
-      "label": "Week 13",
-      "period": "추후 설정",
-      "headline": "세부 일정 미정",
-      "summary": "이 주차의 세부 작업은 아직 확정하지 않습니다. 실제 촬영, 컨택 반응, 공간 사용 가능 여부, 스튜디오 모노 측 의사결정에 따라 단계적으로 설정합니다.",
-      "priority": "미정",
-      "progress": 0,
-      "status": "pending",
-      "tasks": [
-        {
-          "name": "세부 작업은 진행 상황에 따라 추후 설정",
-          "status": "미정",
-          "owner": "SH"
-        }
-      ]
-    },
-    {
-      "week": 14,
-      "label": "Week 14",
-      "period": "추후 설정",
-      "headline": "세부 일정 미정",
-      "summary": "이 주차의 세부 작업은 아직 확정하지 않습니다. 실제 촬영, 컨택 반응, 공간 사용 가능 여부, 스튜디오 모노 측 의사결정에 따라 단계적으로 설정합니다.",
-      "priority": "미정",
-      "progress": 0,
-      "status": "pending",
-      "tasks": [
-        {
-          "name": "세부 작업은 진행 상황에 따라 추후 설정",
-          "status": "미정",
-          "owner": "SH"
-        }
-      ]
-    }
-  ],
-  "kpis": [
-    {
-      "tone": "blue",
-      "title": "3개월 핵심 성과 기준",
-      "value": "일본인 고객 유치 → 이벤트 실행 → 매출 발생",
-      "desc": "단순 콘텐츠 반응이 아니라 실제 예약·운영·결제 가능성이 확인되는 단계까지 도달하는 것을 최종 검증 기준으로 설정합니다."
-    },
-    {
-      "tone": "purple",
-      "title": "5월 말 1차 마일스톤",
-      "value": "초기 콘텐츠 제작 및 타겟 배포 개시",
-      "desc": "숏츠, 일본어 소개문, 사이트·팜플렛·블로그 활용 콘텐츠를 우선 제작하고 일본 타겟 대상 직접 배포를 시작합니다."
-    },
-    {
-      "tone": "pink",
-      "title": "초기 레퍼런스 목표",
-      "value": "무료 제공 조건 기반 테스트 이벤트 1건",
-      "desc": "촬영, 후기, SNS 활용 동의가 가능한 경우 5월 내 또는 초반부에 실제 공간 활용 사례를 빠르게 확보합니다."
-    }
-  ],
-  "requests": [
-    {
-      "completedWeek": 2,
-      "text": "SNS 계정 접속 권한 또는 게시 협의 권한",
-      "done": true
-    },
-    {
-      "completedWeek": 2,
-      "text": "홈페이지 admin 계정 공유 또는 수정 가능 범위 확인",
-      "done": true
-    },
-    {
-      "completedWeek": 2,
-      "text": "블로그 게시 권한 또는 게시 요청 프로세스 확인",
-      "done": true
-    },
-    {
-      "completedWeek": 2,
-      "text": "공간별 공식 사진·영상 원본 자료 공유",
-      "done": true
-    },
-    {
-      "completedWeek": 4,
-      "text": "스튜디오 모노 관련 영상 공유",
-      "done": true
-    }
-  ],
-  "events": [
-    {
-      "date": "2026-05-11",
-      "label": "프로젝트 시작 및 논현 미팅",
-      "type": "visit"
-    },
-    {
-      "date": "2026-05-12",
-      "label": "대시보드 제작",
-      "type": "work"
-    },
-    {
-      "date": "2026-05-13",
-      "label": "대시보드 제작",
-      "type": "work"
-    },
-    {
-      "date": "2026-05-14",
-      "label": "쇼츠 제작 기획",
-      "type": "work"
-    },
-    {
-      "date": "2026-05-15",
-      "label": "논현 미팅, 대시보드 활성화",
-      "type": "visit"
-    },
-    {
-      "date": "2026-05-18",
-      "label": "쇼츠 1차 제작 및 대시보드 업데이트",
-      "type": "work"
-    },
-    {
-      "date": "2026-05-19",
-      "label": "논현 미팅",
-      "type": "visit"
-    },
-    {
-      "date": "2026-05-20",
-      "label": "쇼츠 제작 준비",
-      "type": "work"
-    },
-    {
-      "date": "2026-05-21",
-      "label": "영상 레퍼런스 확보 및 편집",
-      "type": "work"
-    },
-    {
-      "date": "2026-05-22",
-      "label": "논현 미팅",
-      "type": "visit"
-    },
-    {
-      "date": "2026-05-25",
-      "label": "캐릭터 리뉴얼",
-      "type": "work"
-    },
-    {
-      "date": "2026-05-26",
-      "label": "캐릭터 리뉴얼",
-      "type": "work"
-    },
-    {
-      "date": "2026-05-27",
-      "label": "논현 미팅",
-      "type": "visit"
-    },
-    {
-      "date": "2026-05-28",
-      "label": "프로젝트 재설계",
-      "type": "work"
-    },
-    {
-      "date": "2026-05-29",
-      "label": "논현미팅",
-      "type": "visit"
-    },
-    {
-      "date": "2026-06-01",
-      "label": "논현 미팅",
-      "type": "visit"
-    },
-    {
-      "date": "2026-06-02",
-      "label": "컨텐츠 제작 및 대시보드 활성화 준비",
-      "type": "work"
-    },
-    {
-      "date": "2026-06-03",
-      "label": "월드컵 홍보 컨텐츠 제작 및 게시",
-      "type": "work"
-    },
-    {
-      "date": "2026-06-04",
-      "label": "논현 미팅",
-      "type": "visit"
-    },
-    {
-      "date": "2026-06-05",
-      "label": "Meta Business suite 커스텀",
-      "type": "work"
-    },
-    {
-      "date": "2026-06-07",
-      "label": "주간 결과 정리차주 작업 항목 설정",
-      "type": "work"
-    },
-    {
-      "date": "2026-06-08",
-      "label": "논현 미팅\n금주 운영 방향 정리",
-      "type": "visit"
-    },
-    {
-      "date": "2026-06-09",
-      "label": "Meta 광고 운영 시작\n콘텐츠 반응 1차 확인",
-      "type": "work"
-    },
-    {
-      "date": "2026-06-10",
-      "label": "광고 타겟·예산 점검\n월드컵 콘텐츠 반응 분석",
-      "type": "work"
-    },
-    {
-      "date": "2026-06-11",
-      "label": "GitHub Pages 대시보드 수정내부 공유용 최신화",
-      "type": "work"
-    },
-    {
-      "date": "2026-06-12",
-      "label": "논현 미팅. 광고 집행 피드백 관리 진행.",
-      "type": "visit"
-    },
-    {
-      "date": "2026-06-13",
-      "label": "광고 성과 모니터링\n문의 가능성 체크",
-      "type": "work"
-    },
-    {
-      "date": "2026-06-14",
-      "label": "주간 결과 정리차주 작업 항목 설정",
-      "type": "work"
-    },
-    {
-      "date": "2026-08-10",
-      "label": "프로젝트 1차 완료",
-      "type": "work"
-    }
-  ]
-}
-  </script>
+  function resetData(){ if(confirm("브라우저에 저장된 편집 내용을 초기화하고, 파일에 내장된 기본 데이터로 되돌릴까요?")){ localStorage.removeItem(STORAGE_KEY); data = clone(defaultData); renderAll(); } }
+  function addTask(){ const w = currentWeek(); (w.tasks ||= []).push({name:"새 작업", status:"예정", owner:"SH"}); saveData(); renderAll(); }
+  function addRequest(){ const text = prompt("새 요청/협력 사항을 입력하세요."); if(!text) return; data.requests.push({text, done:false, completedWeek:null}); saveData(); renderRequests(); }
+  function renderAll(){ renderMode(); renderWeekControls(); renderCurrentWeek(); renderKpis(); renderRequests(); renderCalendar(); renderEditPanel(); }
+
+  function wire(){
+    byId("editToggle").onclick = () => { editMode = !editMode; renderAll(); };
+    byId("backupBtn").onclick = backupJson;
+    byId("exportHtmlBtn").onclick = exportIndexHtml;
+    byId("resetBtn").onclick = resetData;
+    byId("addTaskBtn").onclick = addTask;
+    byId("addRequestBtn").onclick = addRequest;
+    byId("editPeriod").oninput = e => updateWeek("period", e.target.value);
+    byId("editPriority").oninput = e => updateWeek("priority", e.target.value);
+    byId("editHeadline").oninput = e => updateWeek("headline", e.target.value);
+    byId("editSummary").oninput = e => updateWeek("summary", e.target.value);
+    byId("editProgress").oninput = e => updateWeek("progress", e.target.value);
+    byId("monthSelect").onchange = e => { selectedMonth = e.target.value; renderCalendar(); };
+    byId("deleteEventBtn").onclick = deleteEvent;
+    byId("cancelEventBtn").onclick = closeEventModal;
+    byId("saveEventBtn").onclick = saveEvent;
+    byId("eventModal").onclick = e => { if(e.target === byId("eventModal")) closeEventModal(); };
+    if(byId("monthSelect")) byId("monthSelect").value = selectedMonth;
+  }
+
+  wire();
+  renderAll();
+})();
+</script>
+
 </body></html>
