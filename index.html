@@ -70,9 +70,7 @@
     .day.has-event{background:#fff}.day.visit{background:linear-gradient(135deg,#dbeafe 0%,#eef2ff 100%);border-color:#93c5fd}
     .day-num{font-size:12.5px;font-weight:500;color:var(--text)}
     .event{margin-top:3px;border-left:3px solid;padding-left:4px;font-size:10.5px;line-height:1.15;font-weight:560;word-break:keep-all;overflow-wrap:normal}
-    .requests{padding:14px}.requests p{margin:4px 0 0;font-size:13.5px;color:var(--muted);line-height:1.4;font-weight:500}
-    .req-list{display:grid;gap:7px;margin-top:10px}.req{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center;border:1px solid var(--line);background:#fff;border-radius:12px;padding:9px}
-    .req.view{grid-template-columns:auto 1fr auto}.req-text{font-size:14px;color:#374151;font-weight:500}.carry{background:#fdf2f8;color:#9d174d;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:500}.carry.done{background:#111827;color:#fff}
+    .req.view{grid-template-columns:auto 1fr auto auto}.req-text{font-size:14px;color:#374151;font-weight:500}.carry{background:#fdf2f8;color:#9d174d;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:500}.carry.done{background:#111827;color:#fff}
     .mini-btn{border:1px solid #e5e7eb;background:#fff;border-radius:9px;padding:5px 8px;font-size:12px;cursor:pointer;font-family:inherit}
     .mini-btn.danger{border-color:#fbcfe8;background:#fdf2f8;color:#9d174d}.mini-btn.blue{border-color:#c7d2fe;background:#eef2ff;color:#3730a3}
     .edit-panel{
@@ -144,7 +142,6 @@
     .day-num{font-size:13px;margin-bottom:4px}
     .event{font-size:12.5px;line-height:1.28;font-weight:560;white-space:pre-line;word-break:keep-all;overflow-wrap:anywhere}
     .bottom-grid{grid-template-columns:1fr}
-    .requests-card .requests{padding:14px}
 
 
     /* Studio MONO logo-integrated header */
@@ -503,6 +500,23 @@
   #editTaskList .mini-btn.danger{grid-column:2;width:100%;min-width:0}
 }
 @media(max-width:640px){.week-summary{grid-template-columns:repeat(2,1fr)}.github-notice{font-size:12px}.calendar-nav{justify-content:flex-start}.version-strip{gap:5px}}
+
+/* 2026-07-30: unified weekly block palette; active week remains emphasized */
+.week-btn, .week-btn.scheduled, .week-btn[class*="week-"]{
+  border-color:#cbd5e1 !important;background:#f8fafc !important;color:#475569 !important;box-shadow:none !important;
+}
+.week-btn.active, .week-btn.scheduled.active, .week-btn[class*="week-"].active{
+  border-color:#2563eb !important;background:linear-gradient(135deg,#2563eb 0%,#7c3aed 100%) !important;color:#fff !important;box-shadow:0 8px 18px rgba(79,70,229,.22) !important;
+}
+.week-row-label, .week-row-label[class*="week-"]{
+  background:#f8fafc !important;border-color:#cbd5e1 !important;color:#475569 !important;box-shadow:none !important;
+}
+.week-row-label.active, .week-row-label[class*="week-"].active{
+  background:#dbeafe !important;border-color:#2563eb !important;color:#1e3a8a !important;box-shadow:0 0 0 2px rgba(37,99,235,.12) !important;
+}
+.day[class*="week-"]{background:#fff !important;border-color:#e5e7eb !important;}
+.day[class*="week-"].visit{background:linear-gradient(135deg,#dbeafe 0%,#eef2ff 100%) !important;border-color:#60a5fa !important;}
+.req-text-input{width:100%;min-width:0;border:1px solid #d1d5db;border-radius:9px;padding:6px 8px;font-size:14px;font-family:inherit;color:#374151;}
 </style>
 </head>
 <body>
@@ -529,12 +543,12 @@
 </div>
 </div>
 <div class="current-box">
-<div class="current-week" id="currentWeek">Week 11</div>
-<div class="current-period" id="currentPeriod">7/20 - 7/26</div>
+<div class="current-week" id="currentWeek">Week 12</div>
+<div class="current-period" id="currentPeriod">7/27 - 8/2</div>
 <div class="brand-strip"><span class="brand-dot"></span><span>SEE YOU AT MONO</span></div>
-<div class="backup-status" id="backupStatus">자동 백업 오후 02:33 · 6개</div></div>
+<div class="backup-status" id="backupStatus">자동 백업 오후 12:37 · 4개</div></div>
 </div>
-<div class="version-strip"><span class="version-chip" id="dataVersionChip">DATA v2222</span><span class="version-chip" id="updatedAtChip">업데이트 2026. 7. 24. 오후 2:33:30</span></div></header><div class="github-notice"><strong>GitHub 게시 안내</strong> · 브라우저 편집 내용은 GitHub 저장소에 자동 반영되지 않습니다. 공유용 갱신 시 HTML 내보내기 후 저장소의 <code>index.html</code>을 교체하고 커밋하세요.</div>
+<div class="version-strip"><span class="version-chip" id="dataVersionChip">DATA v2229</span><span class="version-chip" id="updatedAtChip">업데이트 2026. 7. 30. 오후 12:37:20</span></div></header><div class="github-notice"><strong>GitHub 게시 안내</strong> · 브라우저 편집 내용은 GitHub 저장소에 자동 반영되지 않습니다. 공유용 갱신 시 HTML 내보내기 후 저장소의 <code>index.html</code>을 교체하고 커밋하세요.</div>
 <section class="card flow">
 <div class="content">
 <div class="flow-head">
@@ -560,7 +574,7 @@
 <div><div class="field-label">우선순위</div><select id="editPriority"><option>높음</option><option>중간</option><option>미정</option></select></div>
 <div style="grid-column:1/-1"><div class="field-label">헤드라인</div><input id="editHeadline"></div>
 <div style="grid-column:1/-1"><div class="field-label">요약</div><textarea id="editSummary" rows="3"></textarea></div>
-<div><div class="field-label">진행률</div><input id="editProgress" max="100" min="0" type="range"><div class="hint" id="editProgressText">65%</div></div>
+<div><div class="field-label">진행률</div><input id="editProgress" max="100" min="0" type="range"><div class="hint" id="editProgressText">45%</div></div>
 </div>
 <div style="margin-top:14px">
 <div class="flow-head"><h3 style="font-size:14.5px">작업 리스트 편집</h3><button class="mini-btn blue" id="addTaskBtn">+ 작업 추가</button></div>
@@ -573,22 +587,17 @@
 <div class="block">
 <div class="topline">
 <div>
-<div class="tag-row"><span class="tag date" id="weekTag">Week 11 · 7/20 - 7/26</span><span class="tag priority" id="priorityTag">우선순위 높음</span></div>
-<h2 class="headline" id="headline">네이버 검색광고 실행 및 일본 인플루언서 촬영을 통한 온라인 유입·공간 활용 레퍼런스 확대</h2><p class="summary" id="summary">금주에는 STUDIO MONO의 네이버 검색 노출 확대를 위해 파워링크 키워드 적용 및 광고 집행을 시작하고, 초기 성과 데이터를 점검할 예정입니다.
+<div class="tag-row"><span class="tag date" id="weekTag">Week 12 · 7/27 - 8/2</span><span class="tag priority" id="priorityTag">우선순위 높음</span></div>
+<h2 class="headline" id="headline">1차 한일교류회 실행 준비와 일본인 크리에이터 기반 자체 콘텐츠 프로젝트 구체화</h2><p class="summary" id="summary">금주에는 8월 1일 예정된 1차 한일교류회의 현장 운영 준비를 마무리하고, 일본인 참가자 및 신규 협력 후보와의 접점을 실제 공간 운영 레퍼런스로 연결합니다.
 
-동시에 일본 인플루언서들과 호리즌 스튜디오에서 프로필 및 콘텐츠 촬영을 진행하여, 일본 크리에이터의 실제 공간 활용 사례와 향후 홍보에 활용할 수 있는 콘텐츠 레퍼런스를 확보합니다.</p>
+동시에 일본인 인플루언서·크리에이터를 모집해 STUDIO MONO 자체 콘텐츠를 제작하고, 해당 콘텐츠를 기반으로 한국인 고객을 모집하는 공간 기반 프로젝트의 계획서와 운영 구조를 구체화합니다. Meta 광고는 누적 데이터를 정리·분석한 뒤 집행을 중지하고, 네이버 파워링크는 키워드 캠페인 생성과 적용 테스트를 진행합니다.</p>
 </div>
-<div class="progress-box"><div class="label">진행률</div><div class="progress-value" id="progressText">65%</div><div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 65%;"></div></div></div>
+<div class="progress-box"><div class="label">진행률</div><div class="progress-value" id="progressText">45%</div><div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 45%;"></div></div></div>
 </div>
-<div class="week-summary" id="weekSummary"><div class="summary-stat"><div class="n">9</div><div class="t">전체 작업</div></div><div class="summary-stat"><div class="n">3</div><div class="t">완료</div></div><div class="summary-stat"><div class="n">4</div><div class="t">진행 중</div></div><div class="summary-stat"><div class="n">0</div><div class="t">예정</div></div><div class="summary-stat"><div class="n">0</div><div class="t">이월</div></div></div><div style="margin-top:14px"><h3 class="section-title">이번 주 작업</h3><div class="tasks" id="taskList"></div></div>
+<div class="week-summary" id="weekSummary"><div class="summary-stat"><div class="n">8</div><div class="t">전체 작업</div></div><div class="summary-stat"><div class="n">0</div><div class="t">완료</div></div><div class="summary-stat"><div class="n">7</div><div class="t">진행 중</div></div><div class="summary-stat"><div class="n">1</div><div class="t">예정</div></div><div class="summary-stat"><div class="n">0</div><div class="t">이월</div></div></div><div style="margin-top:14px"><h3 class="section-title">이번 주 작업</h3><div class="tasks" id="taskList"></div></div>
 </div>
 </section>
-<div class="side-stack"><section class="card"><div class="kpi-wrap"><h3>KPI</h3><div class="kpi-list" id="kpiList"><div class="kpi blue"><div class="kpi-title">3개월 핵심 성과 기준</div><div class="kpi-value">일본인 고객 유치 → 이벤트 실행 → 매출 발생</div><div class="kpi-desc">단순 콘텐츠 반응이 아니라 실제 예약·운영·결제 가능성이 확인되는 단계까지 도달하는 것을 최종 검증 기준으로 설정합니다.</div></div><div class="kpi purple"><div class="kpi-title">5월 말 1차 마일스톤</div><div class="kpi-value">초기 콘텐츠 제작 및 타겟 배포 개시</div><div class="kpi-desc">숏츠, 일본어 소개문, 사이트·팜플렛·블로그 활용 콘텐츠를 우선 제작하고 일본 타겟 대상 직접 배포를 시작합니다.</div></div><div class="kpi pink"><div class="kpi-title">초기 레퍼런스 목표</div><div class="kpi-value">무료 제공 조건 기반 테스트 이벤트 1건</div><div class="kpi-desc">촬영, 후기, SNS 활용 동의가 가능한 경우 5월 내 또는 초반부에 실제 공간 활용 사례를 빠르게 확보합니다.</div></div></div></div></section><section class="card">
-<div class="requests">
-<div class="flow-head"><div><h3>스튜디오 모노 요청/협력 사항</h3><p id="requestHint">체크박스로 완료 상태를 변경할 수 있습니다.</p></div><button class="mini-btn blue" id="addRequestBtn" style="display: inline-block;">+ 요청 추가</button></div>
-<div class="req-list" id="requestList"><label class="req"><input type="checkbox"><span class="req-text" style="">사이트 고객 DB 기반 카카오톡 고객 리스트 업데이트 및 그룹 분류</span><span class="carry">이월</span><button class="mini-btn danger" type="button">삭제</button></label><label class="req"><input type="checkbox"><span class="req-text" style="">카카오톡 고객 그룹 대상 서비스 안내 메시지 발송 협조</span><span class="carry">이월</span><button class="mini-btn danger" type="button">삭제</button></label></div>
-</div>
-</section></div></section>
+<div class="side-stack"><section class="card"><div class="kpi-wrap"><h3>KPI</h3><div class="kpi-list" id="kpiList"><div class="kpi blue"><div class="kpi-title">3개월 핵심 성과 기준</div><div class="kpi-value">일본인 고객 유치 → 이벤트 실행 → 매출 발생</div><div class="kpi-desc">단순 콘텐츠 반응이 아니라 실제 예약·운영·결제 가능성이 확인되는 단계까지 도달하는 것을 최종 검증 기준으로 설정합니다.</div></div><div class="kpi purple"><div class="kpi-title">5월 말 1차 마일스톤</div><div class="kpi-value">초기 콘텐츠 제작 및 타겟 배포 개시</div><div class="kpi-desc">숏츠, 일본어 소개문, 사이트·팜플렛·블로그 활용 콘텐츠를 우선 제작하고 일본 타겟 대상 직접 배포를 시작합니다.</div></div><div class="kpi pink"><div class="kpi-title">초기 레퍼런스 목표</div><div class="kpi-value">무료 제공 조건 기반 테스트 이벤트 1건</div><div class="kpi-desc">촬영, 후기, SNS 활용 동의가 가능한 경우 5월 내 또는 초반부에 실제 공간 활용 사례를 빠르게 확보합니다.</div></div></div></div></section></div></section>
 <section class="bottom-grid">
 <section class="card calendar-wide">
 <div class="calendar">
@@ -605,7 +614,7 @@
 <div class="modal-backdrop" id="eventModal">
 <div class="modal">
 <h3>캘린더 일정 편집</h3>
-<p class="hint" id="modalDateText">2026-07-21</p><div class="modal-event-list" id="modalEventList"><div class="modal-event-item"><span>프로필 촬영 준비 · work</span><button class="mini-btn danger" data-id="mryi68nrd1bnhu">삭제</button></div><div class="modal-event-item"><span>김치스시 컨택 준비 · work</span><button class="mini-btn danger" data-id="mryi6e41li1nad">삭제</button></div><div class="modal-event-item"><span>2PM 팬클럽 이벤트 운영 관련 컨택 · work</span><button class="mini-btn danger" data-id="mryi6vmkua6opn">삭제</button></div></div>
+<p class="hint" id="modalDateText">2026-07-17</p><div class="modal-event-list" id="modalEventList"><div class="modal-event-item"><span>네이버 AEO 테스트 · work</span><button class="mini-btn danger" data-id="ms6ypzgln97e0c">삭제</button></div></div>
 <div class="modal-fields">
 <div><div class="field-label">일정 내용</div><input id="modalEventLabel" placeholder="예: 논현 미팅"></div>
 <div><div class="field-label">일정 유형</div><select id="modalEventType"><option value="visit">논현 미팅</option><option value="work">작업</option><option value="release">배포</option><option value="request">요청</option><option value="start">시작</option></select></div>
@@ -613,7 +622,7 @@
 <div class="modal-actions"><button class="mini-btn danger" id="deleteEventBtn">해당 날짜 전체 삭제</button><div class="right"><button class="mini-btn" id="cancelEventBtn">취소</button><button class="mini-btn blue" id="saveEventBtn">저장</button></div></div>
 </div>
 </div>
-<script data-version="mono-pro-1784871210665" id="dashboard-data" type="application/json">
+<script data-version="mono-pro-1785382640440" id="dashboard-data" type="application/json">
 {
   "weeks": [
     {
@@ -1176,16 +1185,51 @@
     {
       "week": 12,
       "label": "Week 12",
-      "period": "추후 설정",
-      "headline": "세부 일정 미정",
-      "summary": "이 주차의 세부 작업은 아직 확정하지 않습니다. 금주 및 다음주 진행 상황, 촬영 결과, 컨택 반응, 공간 사용 가능 여부, 스튜디오 모노 측 의사결정에 따라 단계적으로 설정합니다.",
-      "priority": "미정",
-      "progress": 0,
-      "status": "pending",
+      "period": "7/27 - 8/2",
+      "headline": "1차 한일교류회 실행 준비와 일본인 크리에이터 기반 자체 콘텐츠 프로젝트 구체화",
+      "summary": "금주에는 8월 1일 예정된 1차 한일교류회의 현장 운영 준비를 마무리하고, 일본인 참가자 및 신규 협력 후보와의 접점을 실제 공간 운영 레퍼런스로 연결합니다.\n\n동시에 일본인 인플루언서·크리에이터를 모집해 STUDIO MONO 자체 콘텐츠를 제작하고, 해당 콘텐츠를 기반으로 한국인 고객을 모집하는 공간 기반 프로젝트의 계획서와 운영 구조를 구체화합니다. Meta 광고는 누적 데이터를 정리·분석한 뒤 집행을 중지하고, 네이버 파워링크는 키워드 캠페인 생성과 적용 테스트를 진행합니다.",
+      "priority": "높음",
+      "progress": 45,
+      "status": "scheduled",
       "tasks": [
         {
-          "name": "세부 작업은 진행 상황에 따라 추후 설정",
-          "status": "미정",
+          "name": "8/1 1차 한일교류회 운영안·참가자 동선·현장 준비 최종 점검",
+          "status": "진행 중",
+          "owner": "SH"
+        },
+        {
+          "name": "신규 일본인 손님 컨택 및 대면 미팅 진행 (7/30)",
+          "status": "진행 중",
+          "owner": "SH"
+        },
+        {
+          "name": "일본인 인플루언서·크리에이터 모집 기반 STUDIO MONO 자체 콘텐츠 프로젝트 기획",
+          "status": "진행 중",
+          "owner": "SH"
+        },
+        {
+          "name": "자체 콘텐츠를 활용한 한국인 고객 모집 구조 및 프로젝트 계획서 작성",
+          "status": "진행 중",
+          "owner": "SH"
+        },
+        {
+          "name": "STUDIO MONO Meta 광고 누적 데이터 분석 및 성과 정리",
+          "status": "진행 중",
+          "owner": "SH"
+        },
+        {
+          "name": "Meta 광고 집행 중지 및 향후 재집행 조건 정리",
+          "status": "예정",
+          "owner": "SH"
+        },
+        {
+          "name": "네이버 검색광고 파워링크 키워드 캠페인 생성",
+          "status": "진행 중",
+          "owner": "SH"
+        },
+        {
+          "name": "파워링크 키워드·소재 적용 테스트 및 초기 노출 점검",
+          "status": "진행 중",
           "owner": "SH"
         }
       ]
@@ -1243,53 +1287,6 @@
       "title": "초기 레퍼런스 목표",
       "value": "무료 제공 조건 기반 테스트 이벤트 1건",
       "desc": "촬영, 후기, SNS 활용 동의가 가능한 경우 5월 내 또는 초반부에 실제 공간 활용 사례를 빠르게 확보합니다."
-    }
-  ],
-  "requests": [
-    {
-      "completedWeek": 2,
-      "text": "SNS 계정 접속 권한 또는 게시 협의 권한",
-      "done": true
-    },
-    {
-      "completedWeek": 2,
-      "text": "홈페이지 admin 계정 공유 또는 수정 가능 범위 확인",
-      "done": true
-    },
-    {
-      "completedWeek": 2,
-      "text": "블로그 게시 권한 또는 게시 요청 프로세스 확인",
-      "done": true
-    },
-    {
-      "completedWeek": 2,
-      "text": "공간별 공식 사진·영상 원본 자료 공유",
-      "done": true
-    },
-    {
-      "completedWeek": 4,
-      "text": "스튜디오 모노 관련 영상 공유",
-      "done": true
-    },
-    {
-      "completedWeek": 7,
-      "text": "스튜디오 모노 카카오톡 접속 권한 공유",
-      "done": true
-    },
-    {
-      "completedWeek": null,
-      "text": "사이트 고객 DB 기반 카카오톡 고객 리스트 업데이트 및 그룹 분류",
-      "done": false
-    },
-    {
-      "completedWeek": 7,
-      "text": "스튜디오 모노 시설별 정보 및 세부 요금 리스트 자료 공유",
-      "done": true
-    },
-    {
-      "completedWeek": null,
-      "text": "카카오톡 고객 그룹 대상 서비스 안내 메시지 발송 협조",
-      "done": false
     }
   ],
   "events": [
@@ -1654,6 +1651,12 @@
       "type": "visit"
     },
     {
+      "id": "ms6ypzgln97e0c",
+      "date": "2026-07-17",
+      "label": "네이버 AEO 테스트",
+      "type": "work"
+    },
+    {
       "id": "mrisgb3r5tvu4e",
       "date": "2026-07-20",
       "label": "스튜다오 촬영 장비 세팅 및 테스트",
@@ -1708,10 +1711,58 @@
       "type": "visit"
     },
     {
+      "id": "ms6ynzatheg9e7",
+      "date": "2026-07-28",
+      "label": "한일교류회 1차 운영 준비",
+      "type": "visit"
+    },
+    {
+      "id": "ms6yohin3mp5n2",
+      "date": "2026-07-28",
+      "label": "네이버 검색광고 키워드 캠페인 적용 테스트",
+      "type": "visit"
+    },
+    {
+      "id": "ms6yoz0x5h0d7p",
+      "date": "2026-07-29",
+      "label": "MONO 자체 컨텐츠 기반 운영 기획 준비",
+      "type": "work"
+    },
+    {
+      "id": "ms6ypqf801dghu",
+      "date": "2026-07-29",
+      "label": "네이버 키워드 적용 테스트(네이버 지도 검색 적용 확인)",
+      "type": "work"
+    },
+    {
+      "date": "2026-07-30",
+      "label": "신규 일본인 손님 컨택 및 대면 미팅",
+      "type": "visit",
+      "id": "upd03175388766171"
+    },
+    {
+      "date": "2026-07-30",
+      "label": "크리에이터 기반 자체 콘텐츠 프로젝트 계획서 작성",
+      "type": "work",
+      "id": "upd03175388768772"
+    },
+    {
+      "date": "2026-07-31",
+      "label": "1차 한일교류회 운영 준비 최종 점검",
+      "type": "work",
+      "id": "upd03175388769773"
+    },
+    {
       "id": "mr4p3hzda6emvt",
       "date": "2026-08-01",
       "label": "한일교류회 1차 운영 (30명, 류나, 미)",
       "type": "work"
+    },
+    {
+      "date": "2026-08-01",
+      "label": "1차 한일교류회 운영",
+      "type": "visit",
+      "id": "upd03175388770574"
     },
     {
       "date": "2026-08-10",
@@ -1722,8 +1773,8 @@
   ],
   "meta": {
     "schemaVersion": 2,
-    "dataVersion": 2222,
-    "updatedAt": "2026-07-24T05:33:30.665Z",
+    "dataVersion": 2229,
+    "updatedAt": "2026-07-30T03:37:20.439Z",
     "updatedBy": "SH"
   }
 }
@@ -1737,7 +1788,7 @@
 
   function readEmbeddedDefaultData(){
     try { return JSON.parse(DASHBOARD_DATA_NODE?.textContent || "{}"); }
-    catch(e){ console.error("Failed to parse embedded dashboard data", e); return {weeks:[], kpis:[], requests:[], events:[]}; }
+    catch(e){ console.error("Failed to parse embedded dashboard data", e); return {weeks:[], kpis:[], events:[]}; }
   }
   const defaultData = readEmbeddedDefaultData();
   function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
@@ -1747,9 +1798,8 @@
   }
   let data = loadData();
   data.meta ||= {schemaVersion:2,dataVersion:1,updatedAt:null,updatedBy:"SH"};
-  data.weeks ||= []; data.kpis ||= []; data.requests ||= []; data.events ||= [];
+  data.weeks ||= []; data.kpis ||= []; data.events ||= [];
   data.events = data.events.map(e => ({...e, id:e.id || (Date.now().toString(36)+Math.random().toString(36).slice(2,8))}));
-  data.requests = data.requests.map(req => ({completedWeek:null, ...req}));
 
   function todayLocal(){ const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
   function dateKeyFromDate(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
@@ -1851,7 +1901,6 @@
     byId("app")?.classList.toggle("edit-mode", editMode);
     [["editPill","inline-flex"],["undoBtn","inline-block"],["redoBtn","inline-block"],["backupBtn","inline-block"],["importBtn","inline-block"],["exportHtmlBtn","inline-block"],["resetBtn","inline-block"],["editPanel","block"],["addWeekBtn","inline-block"]].forEach(([id,display])=>{ const el=byId(id); if(el) el.style.display = editMode ? display : "none"; });
     const t=byId("editToggle"); if(t){ t.textContent = editMode ? "보기 모드로 전환" : "편집 모드"; t.classList.toggle("active", editMode); }
-    const rh=byId("requestHint"); if(rh) rh.textContent = editMode ? "체크박스로 완료 상태를 변경할 수 있습니다." : "완료되지 않은 항목은 다음 주로 이월합니다.";
     const ch=byId("calendarHint"); if(ch) ch.textContent = editMode ? "편집 모드: 날짜를 클릭해 일정을 추가·수정합니다." : "월별 주요 작업과 논현 방문 일정을 확인합니다.";
   }
 
@@ -1868,7 +1917,7 @@
       data.weeks.forEach(w => {
         const btn = document.createElement("button");
         const pending = w.status === "pending";
-        btn.className = "week-btn"
+        btn.className = "week-btn week-" + Number(w.week)
           + (Number(w.week) === 5 ? " week-5" : Number(w.week) === 6 ? " week-6" : "")
           + (Number(w.week) === Number(selectedWeek) ? " active" : pending ? "" : " scheduled");
         btn.innerHTML = `<div class="w">${escapeHtml(w.label)}</div><div class="p">${escapeHtml(w.period)}</div>`;
@@ -1918,30 +1967,6 @@
     });
   }
 
-  function visibleRequests(){ return data.requests.filter(req => !req.done || !req.completedWeek || Number(req.completedWeek) >= Number(selectedWeek)); }
-  function renderRequests(){
-    const el = byId("requestList"); if(!el) return;
-    el.innerHTML = "";
-    const list = visibleRequests();
-    list.forEach(req => {
-      const index = data.requests.indexOf(req);
-      const row = document.createElement("label");
-      row.className = "req" + (editMode ? "" : " view");
-      const completedLabel = req.done ? `완료${req.completedWeek ? " · W" + req.completedWeek : ""}` : "이월";
-      row.innerHTML = `<input type="checkbox" ${req.done ? "checked" : ""} ${editMode ? "" : "disabled"}><span class="req-text" style="${req.done ? "text-decoration:line-through;opacity:.62" : ""}">${escapeHtml(req.text)}</span><span class="carry ${req.done ? "done" : ""}">${completedLabel}</span>${editMode ? '<button type="button" class="mini-btn danger">삭제</button>' : ""}`;
-      row.querySelector("input").onchange = () => { if(!editMode) return; recordHistory(); data.requests[index].done = !data.requests[index].done; data.requests[index].completedWeek = data.requests[index].done ? selectedWeek : null; saveData(); renderRequests(); };
-      const del = row.querySelector("button");
-      if(del) del.onclick = e => { e.preventDefault(); recordHistory(); data.requests.splice(index, 1); saveData(); renderRequests(); };
-      el.appendChild(row);
-    });
-    if(list.length === 0){
-      const empty = document.createElement("div");
-      empty.style.cssText = "border:1px dashed #d1d5db;border-radius:12px;padding:12px;color:#6b7280;font-size:13.5px;background:#fff";
-      empty.textContent = "해당 주차에 표시할 요청/협력 사항이 없습니다.";
-      el.appendChild(empty);
-    }
-  }
-
   function renderCalendar(){
     const grid = byId("calendarGrid"); if(!grid) return;
     grid.innerHTML = "";
@@ -1962,7 +1987,7 @@
       const weekNums = realDates.map(d => projectWeekNumber(d)).filter(Boolean);
       const weekNum = weekNums.length ? weekNums[0] : null;
       const label = document.createElement("div");
-      label.className = "week-row-label"
+      label.className = "week-row-label" + (weekNum ? " week-" + weekNum : "")
         + (weekNum === selectedWeek ? " active" : "");
       label.textContent = weekNum ? `W${weekNum}` : "-";
       grid.appendChild(label);
@@ -1973,7 +1998,7 @@
         const cell = document.createElement("button");
         cell.type = "button";
         cell.className = "day"
-          + (weekNum === 5 ? " week-5" : weekNum === 6 ? " week-6" : "")
+          + (weekNum ? " week-" + weekNum : "")
           + (events.length ? " has-event" : "")
           + (events.some(e=>e.type === "visit") ? " visit" : "")
           + (key === todayKey ? " today" : "");
@@ -2102,7 +2127,6 @@
     saveData(); renderAll();
   }
   function addTask(){ recordHistory(); const w = currentWeek(); (w.tasks ||= []).push({name:"새 작업", status:"예정", owner:"SH"}); saveData(); renderAll(); }
-  function addRequest(){ const text = prompt("새 요청/협력 사항을 입력하세요."); if(!text) return; recordHistory(); data.requests.push({text, done:false, completedWeek:null}); saveData(); renderRequests(); }
   function renderAll(){ renderMode(); renderWeekControls(); renderCurrentWeek(); renderCalendar(); renderEditPanel(); renderMeta(); updateHistoryButtons(); }
 
   function wire(){
@@ -2116,7 +2140,6 @@
     byId("resetBtn").onclick = resetData;
     byId("addTaskBtn").onclick = addTask;
     if(byId("addWeekBtn")) byId("addWeekBtn").onclick = addWeek;
-    if(byId("addRequestBtn")) byId("addRequestBtn").onclick = addRequest;
     byId("editPeriod").oninput = e => updateWeek("period", e.target.value, `week-${selectedWeek}-period`);
     byId("editHeadline").oninput = e => updateWeek("headline", e.target.value, `week-${selectedWeek}-headline`);
     byId("editSummary").oninput = e => updateWeek("summary", e.target.value, `week-${selectedWeek}-summary`);
